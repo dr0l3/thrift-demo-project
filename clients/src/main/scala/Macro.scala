@@ -12,7 +12,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 trait Test[A[_]] {
   def hello(): A[String]
-  def hello2(): A[String]
+  def hello2(str: String): A[String]
 }
 
 class FutT extends Test[Future] {
@@ -21,7 +21,7 @@ class FutT extends Test[Future] {
     "Hello"
   }
 
-  override def hello2(): Future[String] = Future {
+  override def hello2(str: String): Future[String] = Future {
     "HELLOOO!"
   }
 }
@@ -33,8 +33,8 @@ object hmm {
       IO.fromFuture(IO(f.hello()))
     }
 
-    override def hello2(): IO[String] = {
-      IO.fromFuture(IO(f.hello2()))
+    override def hello2(str: String): IO[String] = {
+      IO.fromFuture(IO(f.hello2(str)))
     }
   }
 }
@@ -84,7 +84,7 @@ object LibraryMacros {
     val paramsByMethod = tpe.members.filter(_.isMethod).filter(_.asMethod.returnType.typeSymbol.name.toString.startsWith("A")).map { member =>
       val methodName = member.name.decodedName.toTermName
       val params = member.asMethod.paramLists.flatten.map { param =>
-        (param.name.decodedName.toString, param.typeSignature.resultType.finalResultType.toString)
+        (param.name.decodedName.toString, param.typeSignature.resultType.finalResultType)
       }
       val resultType = member.asMethod.returnType.typeArgs.head
       (methodName, params, resultType)
@@ -94,7 +94,7 @@ object LibraryMacros {
       case (methodName, params, resultType) =>
         val paramDefinitions = params.map {
           case (name, paramType) =>
-            q"$name : $paramType"
+            q"val ${TermName(name)} : $paramType"
         }
         val paramList = params.map {
           case (name, _) =>

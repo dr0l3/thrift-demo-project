@@ -27,7 +27,7 @@ object Run extends App {
 
   val io = for {
     first <- test.hello()
-    second <- test.hello2()
+    second <- test.hello2("zomg")
   } yield (first, second)
 
   println(io.unsafeRunSync())
