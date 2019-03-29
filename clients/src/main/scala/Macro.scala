@@ -75,13 +75,14 @@ object LibraryMacros {
      """
   }
 
-  def convert(a: Test[Future]): Test[IO] = macro convertImpl
+  def convert(a: UserService[TFuture]): UserService[IO] = macro convertImpl
 
-  def convertImpl(c: Context)(a: c.Expr[Test[Future]]): c.Tree = {
+  def convertImpl(c: Context)(a: c.Expr[UserService[TFuture]]): c.Tree = {
     import c.universe._
-    val tpe = typeOf[Test[Future]]
+    import TwitterConverters._
+    val tpe = typeOf[UserService[Future]]
 
-    val paramsByMethod = tpe.members.filter(_.isMethod).filter(_.asMethod.returnType.typeSymbol.name.toString.startsWith("A")).map { member =>
+    val paramsByMethod = tpe.members.filter(_.isMethod).filter(_.asMethod.returnType.typeSymbol.name.toString.startsWith("MM")).map { member =>
       val methodName = member.name.decodedName.toTermName
       val params = member.asMethod.paramLists.flatten.map { param =>
         (param.name.decodedName.toString, param.typeSignature.resultType.finalResultType)
@@ -100,11 +101,11 @@ object LibraryMacros {
           case (name, _) =>
             q"$name"
         }
-        q"""override def $methodName(...$paramDefinitions): IO[$resultType] = IO.fromFuture(IO($a.$methodName(...$paramList)))"""
+        q"""override def $methodName(...$paramDefinitions): IO[$resultType] = IO.fromFuture(IO(twitterFutureToScalaFuture($a.$methodName(...$paramList))))"""
     }
 
     q"""
-       new Test[IO] {
+       new UserService[IO] {
             ..$futureMethods
        }
      """

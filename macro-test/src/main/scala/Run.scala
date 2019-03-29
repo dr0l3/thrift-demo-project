@@ -3,6 +3,7 @@ import java.util.UUID
 import cats.effect.IO
 import com.dr0l3.thrift.generated.{ User, UserResponse, UserService }
 import com.twitter.util.Future
+import TwitterConverters._
 
 object Run extends App {
   //  LibraryMacros.greeting(List("omgzomg"))
@@ -23,11 +24,11 @@ object Run extends App {
     }
   }
 
-  val test = LibraryMacros.convert(fut)
+  val test = LibraryMacros.convert(omg)
 
   val io = for {
-    first <- test.hello()
-    second <- test.hello2("zomg")
+    first <- test.getUserById("OMG")
+    second <- test.createUser("Rune")
   } yield (first, second)
 
   println(io.unsafeRunSync())
