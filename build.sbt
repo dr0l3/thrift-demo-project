@@ -105,7 +105,8 @@ lazy val commonScalaFlags = Seq(
   "-Ywarn-unused:params", // Warn if a value parameter is unused.
   "-Ywarn-unused:patvars", // Warn if a variable bound in a pattern is unused.
   "-Ywarn-unused:privates", // Warn if a private member is unused.
-  "-Ywarn-value-discard" // Warn when non-Unit expression results are unused.
+  "-Ywarn-value-discard", // Warn when non-Unit expression results are unused.
+  "-Ymacro-debug-lite"
 )
 
 lazy val commonDocker = dockerfile in docker := {
@@ -166,6 +167,11 @@ lazy val server = baseproject("web")
     dockerImageNames("web")
   )
 
+lazy val client = baseproject("clients")
+  .dependsOn(protocols)
+
+lazy val macroTest = baseproject("macro-test")
+  .dependsOn(client)
 
 lazy val user = baseproject("user")
   .dependsOn(protocols)
